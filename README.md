@@ -21,7 +21,7 @@ const server = Server((conn, data, cb) => {
 // You can also override the default error handling function.
 const server = Server((conn, data) => {
   throw new Error("This could be sensitive information!");
-}, {handleError: (e) => "But it's okay because this is what will be sent."});
+}, (e) => "But it's okay because this is what will be sent.");
 
 // Isorender is best used with some sort of rendering framework.
 const server = Server((conn, data) => {
