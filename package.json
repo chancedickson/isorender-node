@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "An isomorphic rendering server for use with clients in other languages.",
   "main": "src/index.js",
-  "repository": "chncdcksn/isomorphic-node",
+  "repository": "chncdcksn/isorender-node",
   "author": "Chance Dickson <me@chncdcksn.com>",
   "license": "MIT",
   "dependencies": {},
