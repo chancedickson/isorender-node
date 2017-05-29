@@ -1,7 +1,7 @@
 # Isorender
-## Add isomorphic rendering to any server, regardless of language.
+Add isomorphic rendering to any server, regardless of language.
 
-### Server
+## Server
 ```javascript
 const {Server} = require("isorender");
 
@@ -31,18 +31,18 @@ const server = Server((conn, data) => {
 server.listen(8080, () => console.log("Listening on port 8080"));
 ```
 
-### Protocol
+## Protocol
 The Isorender protocol consists of a length-prefixed JSON payload. The length
 prefix is always a 32-bit integer in big endian. The JSON payload should be
 encoded in `utf8`.
 
-#### Request
+### Request
 A request will be in the following format.
 ```json
 {
-  "id": UUIDv4,
-  "conn": Object,
-  "data": Object
+  "id": "random UUIDv4",
+  "conn": {...},
+  "data": {...}
 }
 ```
 
@@ -50,29 +50,29 @@ A request will be in the following format.
 be in the following format.
 ```json
 {
-  "host": HTTP host of the request,
-  "path": HTTP path of the request,
-  "query": HTTP query parameters
+  "host": "HTTP host of the request",
+  "path": "HTTP path of the request",
+  "query": "HTTP query parameters"
 }
 ```
 
 `data` is an arbitrary object provided to the client. For example, this could
 consist of data retrieved from a database.
 
-#### Response
+### Response
 A response can be in one of two formats.
 
 ```json
 {
-  "id": UUIDv4,
-  "rendered": String
+  "id": "UUIDv4 sent in the request",
+  "rendered": "Rendered markup"
 }
 ```
 
 ```json
 {
-  "id": UUIDv4,
-  "error": String
+  "id": "UUIDv4 sent in the request",
+  "error": "Error string"
 }
 ```
 
