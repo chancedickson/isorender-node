@@ -10,7 +10,7 @@ describe("Isorender", function() {
     it("should render synchronously", function(cb) {
       const server = Isorender.Server(function(conn, data) {
         return `Hello, ${data.name}! You went to ${conn.path}!`;
-      }, {sync: true});
+      });
       server.listen("/tmp/isorender-test.sock", () => {
         const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
           client = net.connect("/tmp/isorender-test.sock", () => {
@@ -86,7 +86,7 @@ describe("Isorender", function() {
     it("should render error synchronously", function(cb) {
       const server = Isorender.Server(function(conn, data) {
         throw "Error!";
-      }, {sync: true});
+      });
       server.listen("/tmp/isorender-test.sock", () => {
         const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
           client = net.connect("/tmp/isorender-test.sock", () => {
@@ -162,7 +162,7 @@ describe("Isorender", function() {
     it("should handle error synchronously", function(cb) {
       const server = Isorender.Server(function(conn, data) {
         throw new Error("Error!");
-      }, {sync: true, handleError: (e) => "Test handle"});
+      }, (e) => "Test handle");
       server.listen("/tmp/isorender-test.sock", () => {
         const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
           client = net.connect("/tmp/isorender-test.sock", () => {
@@ -200,7 +200,7 @@ describe("Isorender", function() {
     it("should handle error asynchronously", function(cb) {
       const server = Isorender.Server(function(conn, data, cb) {
         cb(new Error("Error!"));
-      }, {handleError: (e) => "Test handle"});
+      }, (e) => "Test handle");
       server.listen("/tmp/isorender-test.sock", () => {
         const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
           client = net.connect("/tmp/isorender-test.sock", () => {

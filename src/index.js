@@ -2,12 +2,11 @@
 
 const net = require("net");
 
-function Handler(renderFunc, opts = {}) {
-  const {sync = false, handleError = false} = opts;
+function Handler(renderFunc, handleError = (e) => e.toString()) {
   return (socket) => {
     function render(args, cb) {
       try {
-        if (sync) {
+        if (renderFunc.length === 2) {
           return process.nextTick(cb, null, renderFunc.apply(null, args));
         }
         process.nextTick(() => renderFunc(...args, cb));
@@ -28,9 +27,6 @@ function Handler(renderFunc, opts = {}) {
     }
 
     function error(id, error) {
-      if (!handleError) {
-        return {id, error: error.toString()};
-      }
       return {id, error: handleError(error)};
     }
 
@@ -69,8 +65,8 @@ function Handler(renderFunc, opts = {}) {
   };
 }
 
-function Server(renderFunc, opts = {}) {
-  return net.createServer(Handler(renderFunc, opts));
+function Server(renderFunc, handleError) {
+  return net.createServer(Handler(renderFunc, handleError));
 }
 
 module.exports.Server = Server;
