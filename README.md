@@ -1,6 +1,33 @@
 # Isorender
 Add isomorphic rendering to any server, regardless of language.
 
+## Client
+```javascript
+const {Client} = require("isorender");
+
+// Assuming a server has been started on localhost:8080
+const client = Client("localhost:8080");
+
+client.send({path: "/test", host: "localhost", query: {}}, {name: "world"}, (err, response) => {
+  response.rendered === "Hello, world! You went to /test!"; // => true
+});
+```
+
+## Client API
+
+* `Client(url[, timeout])`
+  Returns a Client that connects to `url`. The `timeout` parameter sets the
+  amount of time the client will wait for a response before triggering a
+  timeout. The Client queues requests, so you can immediately begin sending
+  requests.
+* `client.send(conn, data, cb)`
+  Sends a request with the `conn` as `conn` and `data` as `data`. On receiving
+  a response, `cb` is called with the arguments `(err, response)`. `err` is
+  currently used only in the case of a timeout. If a response comes in as an
+  error response, it is still used as the `response` parameter.
+* `client.close()`
+  Closes the client.
+
 ## Server
 ```javascript
 const {Server} = require("isorender");
@@ -30,6 +57,26 @@ const server = Server((conn, data) => {
 
 server.listen(8080, () => console.log("Listening on port 8080"));
 ```
+
+## Server API
+
+* `Server(renderFunc[, errorHandler])`
+  Returns a Server that will render requests with `renderFunc`. `renderFunc` is
+  called with `(conn, data[, cb])` and is optionally asynchronous (determined by
+  `renderFunc.length`). `cb` accepts two parameters: `(err, markup)`, where
+  `err` is any error occurred during the process and `markup` is the rendered
+  markup. If `renderFunc` throws an error (if synchronous) or calls it's
+  callback with an error, `errorHandler` will be called with `(err)` where `err`
+  is the error thrown or called in the callback. If `errorHandler` is not
+  provided in the constructor, it defaults to `(e) => e.toString()`.
+
+* `server.listen(...args)`
+  Applies arguments to the `net.Server.listen` function. Can accept any
+  arguments `net.Server.listen` will accept.
+
+* `server.close(...args)`
+  Applies arguments to the `net.Server.close` function. Can accept any
+  arguments `net.Server.close` will accept.
 
 ## Protocol
 The Isorender protocol consists of a length-prefixed JSON payload. The length
