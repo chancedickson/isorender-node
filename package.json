@@ -6,10 +6,11 @@
   "repository": "chncdcksn/isorender-node",
   "author": "Chance Dickson <me@chncdcksn.com>",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "mocha": "^3.4.1",
+  "dependencies": {
     "uuid": "^3.0.1"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.1"
   },
   "scripts": {
     "test": "mocha"
