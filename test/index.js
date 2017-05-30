@@ -6,41 +6,22 @@ const assert = require("assert"),
   Isorender = require("../src");
 
 describe("Isorender", function() {
-  describe("Server", function() {
+  describe("Server/Client", function() {
     it("should render synchronously", function(cb) {
       const server = Isorender.Server(function(conn, data) {
         return `Hello, ${data.name}! You went to ${conn.path}!`;
       });
       server.listen("/tmp/isorender-test.sock", () => {
-        const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
-          client = net.connect("/tmp/isorender-test.sock", () => {
-            const payload = Buffer.from(JSON.stringify(req), "utf8"),
-              length = Buffer.allocUnsafe(4);
-            length.writeInt32BE(payload.length);
-            client.write(Buffer.concat([length, payload]));
-          });
-        let buffer, frameLength;
-        client.on("data", (data) => {
-          if (!buffer) {
-            buffer = data;
-          } else {
-            buffer = Buffer.concat([buffer, data]);
-          }
-          if (!frameLength && buffer.length >= 4) {
-            frameLength = buffer.readInt32BE();
-            buffer = buffer.slice(4);
-          }
-          if (frameLength && frameLength === buffer.length) {
-            const {id, rendered} = JSON.parse(buffer.toString("utf8"));
-            assert(req.id === id);
-            assert(rendered === "Hello, world! You went to /test!");
-            client.end();
-            server.close(() => {
-              fs.unlink("/tmp/isorender-test.sock", () => {
-                cb();
-              });
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        const request = client.send({path: "/test"}, {name: "world"}, (err, response) => {
+          assert(request.id === response.id);
+          assert(response.rendered === "Hello, world! You went to /test!");
+          client.close();
+          server.close(() => {
+            fs.unlink("/tmp/isorender-test.sock", () => {
+              cb();
             });
-          }
+          });
         });
       });
     });
@@ -50,189 +31,116 @@ describe("Isorender", function() {
         cb(null, `Hello, ${data.name}! You went to ${conn.path}!`);
       });
       server.listen("/tmp/isorender-test.sock", () => {
-        const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
-          client = net.connect("/tmp/isorender-test.sock", () => {
-            const payload = Buffer.from(JSON.stringify(req), "utf8"),
-              length = Buffer.allocUnsafe(4);
-            length.writeInt32BE(payload.length);
-            client.write(Buffer.concat([length, payload]));
-          });
-        let buffer, frameLength;
-        client.on("data", (data) => {
-          if (!buffer) {
-            buffer = data;
-          } else {
-            buffer = Buffer.concat([buffer, data]);
-          }
-          if (!frameLength && buffer.length >= 4) {
-            frameLength = buffer.readInt32BE();
-            buffer = buffer.slice(4);
-          }
-          if (frameLength && frameLength === buffer.length) {
-            const {id, rendered} = JSON.parse(buffer.toString("utf8"));
-            assert(req.id === id);
-            assert(rendered === "Hello, world! You went to /test!");
-            client.end();
-            server.close(() => {
-              fs.unlink("/tmp/isorender-test.sock", () => {
-                cb();
-              });
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        const request = client.send({path: "/test"}, {name: "world"}, (err, response) => {
+          assert(request.id === response.id);
+          assert(response.rendered === "Hello, world! You went to /test!");
+          client.close();
+          server.close(() => {
+            fs.unlink("/tmp/isorender-test.sock", () => {
+              cb();
             });
-          }
+          });
         });
       });
     });
 
-    it("should render error synchronously", function(cb) {
-      const server = Isorender.Server(function(conn, data) {
-        throw "Error!";
-      });
-      server.listen("/tmp/isorender-test.sock", () => {
-        const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
-          client = net.connect("/tmp/isorender-test.sock", () => {
-            const payload = Buffer.from(JSON.stringify(req), "utf8"),
-              length = Buffer.allocUnsafe(4);
-            length.writeInt32BE(payload.length);
-            client.write(Buffer.concat([length, payload]));
-          });
-        let buffer, frameLength;
-        client.on("data", (data) => {
-          if (!buffer) {
-            buffer = data;
-          } else {
-            buffer = Buffer.concat([buffer, data]);
-          }
-          if (!frameLength && buffer.length >= 4) {
-            frameLength = buffer.readInt32BE();
-            buffer = buffer.slice(4);
-          }
-          if (frameLength && frameLength === buffer.length) {
-            const {id, error} = JSON.parse(buffer.toString("utf8"));
-            assert(req.id === id);
-            assert(error === "Error!");
-            client.end();
-            server.close(() => {
-              fs.unlink("/tmp/isorender-test.sock", () => {
-                cb();
-              });
-            });
-          }
-        });
-      });
-    });
-
-    it("should render error asynchronously", function(cb) {
-      const server = Isorender.Server(function(conn, data, cb) {
-        cb("Error!");
-      });
-      server.listen("/tmp/isorender-test.sock", () => {
-        const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
-          client = net.connect("/tmp/isorender-test.sock", () => {
-            const payload = Buffer.from(JSON.stringify(req), "utf8"),
-              length = Buffer.allocUnsafe(4);
-            length.writeInt32BE(payload.length);
-            client.write(Buffer.concat([length, payload]));
-          });
-        let buffer, frameLength;
-        client.on("data", (data) => {
-          if (!buffer) {
-            buffer = data;
-          } else {
-            buffer = Buffer.concat([buffer, data]);
-          }
-          if (!frameLength && buffer.length >= 4) {
-            frameLength = buffer.readInt32BE();
-            buffer = buffer.slice(4);
-          }
-          if (frameLength && frameLength === buffer.length) {
-            const {id, error} = JSON.parse(buffer.toString("utf8"));
-            assert(req.id === id);
-            assert(error === "Error!");
-            client.end();
-            server.close(() => {
-              fs.unlink("/tmp/isorender-test.sock", () => {
-                cb();
-              });
-            });
-          }
-        });
-      });
-    });
-
-    it("should handle error synchronously", function(cb) {
+    it("should respond error synchronously", function(cb) {
       const server = Isorender.Server(function(conn, data) {
         throw new Error("Error!");
-      }, (e) => "Test handle");
+      });
       server.listen("/tmp/isorender-test.sock", () => {
-        const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
-          client = net.connect("/tmp/isorender-test.sock", () => {
-            const payload = Buffer.from(JSON.stringify(req), "utf8"),
-              length = Buffer.allocUnsafe(4);
-            length.writeInt32BE(payload.length);
-            client.write(Buffer.concat([length, payload]));
-          });
-        let buffer, frameLength;
-        client.on("data", (data) => {
-          if (!buffer) {
-            buffer = data;
-          } else {
-            buffer = Buffer.concat([buffer, data]);
-          }
-          if (!frameLength && buffer.length >= 4) {
-            frameLength = buffer.readInt32BE();
-            buffer = buffer.slice(4);
-          }
-          if (frameLength && frameLength === buffer.length) {
-            const {id, error} = JSON.parse(buffer.toString("utf8"));
-            assert(req.id === id);
-            assert(error === "Test handle");
-            client.end();
-            server.close(() => {
-              fs.unlink("/tmp/isorender-test.sock", () => {
-                cb();
-              });
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        const request = client.send({path: "/test"}, {name: "world"}, (err, response) => {
+          assert(request.id === response.id);
+          assert(response.error === "Error: Error!");
+          client.close();
+          server.close(() => {
+            fs.unlink("/tmp/isorender-test.sock", () => {
+              cb();
             });
-          }
+          });
         });
       });
     });
 
-    it("should handle error asynchronously", function(cb) {
+    it("should respond error asynchronously", function(cb) {
       const server = Isorender.Server(function(conn, data, cb) {
-        cb(new Error("Error!"));
-      }, (e) => "Test handle");
+        process.nextTick(cb, new Error("Error!"));
+      });
       server.listen("/tmp/isorender-test.sock", () => {
-        const req = {id: uuid(), data: {name: "world"}, conn: {path: "/test"}},
-          client = net.connect("/tmp/isorender-test.sock", () => {
-            const payload = Buffer.from(JSON.stringify(req), "utf8"),
-              length = Buffer.allocUnsafe(4);
-            length.writeInt32BE(payload.length);
-            client.write(Buffer.concat([length, payload]));
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        const request = client.send({path: "/test"}, {name: "world"}, (err, response) => {
+          assert(request.id === response.id);
+          assert(response.error === "Error: Error!");
+          client.close();
+          server.close(() => {
+            fs.unlink("/tmp/isorender-test.sock", () => {
+              cb();
+            });
           });
-        let buffer, frameLength;
-        client.on("data", (data) => {
-          if (!buffer) {
-            buffer = data;
-          } else {
-            buffer = Buffer.concat([buffer, data]);
-          }
-          if (!frameLength && buffer.length >= 4) {
-            frameLength = buffer.readInt32BE();
-            buffer = buffer.slice(4);
-          }
-          if (frameLength && frameLength === buffer.length) {
-            const {id, error} = JSON.parse(buffer.toString("utf8"));
-            assert(req.id === id);
-            assert(error === "Test handle");
-            client.end();
+        });
+      });
+    });
+
+    it("should respond custom error synchronously", function(cb) {
+      const server = Isorender.Server(function(conn, data) {
+        throw new Error("Error!");
+      }, (e) => `${e.toString()} custom`);
+      server.listen("/tmp/isorender-test.sock", () => {
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        const request = client.send({path: "/test"}, {name: "world"}, (err, response) => {
+          assert(request.id === response.id);
+          assert(response.error === "Error: Error! custom");
+          client.close();
+          server.close(() => {
+            fs.unlink("/tmp/isorender-test.sock", () => {
+              cb();
+            });
+          });
+        });
+      });
+    });
+
+    it("should respond custom error asynchronously", function(cb) {
+      const server = Isorender.Server(function(conn, data, cb) {
+        process.nextTick(cb, new Error("Error!"));
+      }, (e) => `${e.toString()} custom`);
+      server.listen("/tmp/isorender-test.sock", () => {
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        const request = client.send({path: "/test"}, {name: "world"}, (err, response) => {
+          assert(request.id === response.id);
+          assert(response.error === "Error: Error! custom");
+          client.close();
+          server.close(() => {
+            fs.unlink("/tmp/isorender-test.sock", () => {
+              cb();
+            });
+          });
+        });
+      });
+    });
+  });
+
+  describe("Client", function() {
+    it("should automatically send after connection", function(cb) {
+      const server = Isorender.Server(function(conn, data) {
+        return `Hello, ${data.name}! You went to ${conn.path}!`;
+      });
+      server.listen("/tmp/isorender-test.sock", () => {
+        const client = Isorender.Client("/tmp/isorender-test.sock");
+        setTimeout(function() {
+          const request = client.send({path: "/test"}, {name: "world"}, (err, response) => { assert(request.id === response.id);
+            assert(response.rendered === "Hello, world! You went to /test!");
+            client.close();
             server.close(() => {
               fs.unlink("/tmp/isorender-test.sock", () => {
                 cb();
               });
             });
-          }
-        });
+          });
+        }, 5000);
       });
-    });
+    }).timeout(6000);
   });
 });
