@@ -1,6 +1,6 @@
 {
   "name": "isorender",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An isomorphic rendering server for use with clients in other languages.",
   "main": "src/index.js",
   "repository": "chncdcksn/isorender-node",
@@ -14,5 +14,6 @@
   },
   "scripts": {
     "test": "mocha"
-  }
+  },
+  "keywords": ["isomorphic", "server", "rendering", "render", "client"]
 }
