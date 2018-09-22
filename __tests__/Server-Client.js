@@ -1,6 +1,8 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { promisify } = require('util');
 const { v4: uuid } = require('uuid');
 const { Server, Client } = require('../src');
@@ -21,10 +23,16 @@ function randomRequests(num) {
 
 describe('Server/Client sync rendering', () => {
   const requestAmount = 64;
+  const tmp = os.tmpdir();
+  let url = null;
   let server = null;
   let client = null;
-  
-  afterEach(async () => {
+
+  beforeEach(() => {
+    url = path.join(tmp, `${uuid()}.sock`);
+  });
+
+  afterEach(() => {
     client.close();
     server.close();
   });
@@ -38,9 +46,9 @@ describe('Server/Client sync rendering', () => {
     });
 
     return new Promise(resolve => {
-      server.listen('/tmp/isorender-test.sock', () => {
+      server.listen(url, () => {
         let i = 0;
-        client = Client('/tmp/isorender-test.sock');
+        client = Client(url);
 
         requests.forEach(requestData => {
           const request = client.send(requestData.conn, requestData.data, (err, response) => {
@@ -65,9 +73,9 @@ describe('Server/Client sync rendering', () => {
     });
 
     return new Promise(resolve => {
-      server.listen('/tmp/isorender-test.sock', () => {
+      server.listen(url, () => {
         let i = 0;
-        client = Client('/tmp/isorender-test.sock');
+        client = Client(url);
 
         requests.forEach(requestData => {
           const request = client.send(requestData.conn, requestData.data, (err, response) => {
@@ -92,9 +100,9 @@ describe('Server/Client sync rendering', () => {
     });
 
     return new Promise(resolve => {
-      server.listen('/tmp/isorender-test.sock', () => {
+      server.listen(url, () => {
         let i = 0;
-        client = Client('/tmp/isorender-test.sock');
+        client = Client(url);
 
         requests.forEach(requestData => {
           const request = client.send(requestData.conn, requestData.data, (err, response) => {
@@ -119,9 +127,9 @@ describe('Server/Client sync rendering', () => {
     });
 
     return new Promise(resolve => {
-      server.listen('/tmp/isorender-test.sock', () => {
+      server.listen(url, () => {
         let i = 0;
-        client = Client('/tmp/isorender-test.sock');
+        client = Client(url);
 
         requests.forEach(requestData => {
           const request = client.send(requestData.conn, requestData.data, (err, response) => {
@@ -146,9 +154,9 @@ describe('Server/Client sync rendering', () => {
     }, e => `${e} - Custom`);
 
     return new Promise(resolve => {
-      server.listen('/tmp/isorender-test.sock', () => {
+      server.listen(url, () => {
         let i = 0;
-        client = Client('/tmp/isorender-test.sock');
+        client = Client(url);
 
         requests.forEach(requestData => {
           const request = client.send(requestData.conn, requestData.data, (err, response) => {
@@ -173,9 +181,9 @@ describe('Server/Client sync rendering', () => {
     }, e => `${e} - Custom`);
 
     return new Promise(resolve => {
-      server.listen('/tmp/isorender-test.sock', () => {
+      server.listen(url, () => {
         let i = 0;
-        client = Client('/tmp/isorender-test.sock');
+        client = Client(url);
 
         requests.forEach(requestData => {
           const request = client.send(requestData.conn, requestData.data, (err, response) => {
