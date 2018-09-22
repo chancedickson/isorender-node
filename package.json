@@ -1,19 +1,25 @@
 {
   "name": "isorender",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "An isomorphic rendering server for use with clients in other languages.",
   "main": "src/index.js",
-  "repository": "chncdcksn/isorender-node",
-  "author": "Chance Dickson <me@chncdcksn.com>",
-  "license": "MIT",
+  "repository": "chancedickson/isorender-node",
+  "author": "Chance Dickson <me@chancedickson.com>",
+  "license": "BSD-3-Clause",
   "dependencies": {
-    "uuid": "^3.0.1"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "mocha": "^3.4.1"
+    "jest": "^23.6.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "jest"
   },
-  "keywords": ["isomorphic", "server", "rendering", "render", "client"]
+  "keywords": [
+    "isomorphic",
+    "server",
+    "rendering",
+    "render",
+    "client"
+  ]
 }

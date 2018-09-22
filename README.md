@@ -1,36 +1,15 @@
 # Isorender
+
 Add isomorphic rendering to any server, regardless of language.
 
-## Client
+## Isorender.Server
+
+The Isorender NodeJS server.
+
+### Examples
+
 ```javascript
-const {Client} = require("isorender");
-
-// Assuming a server has been started on localhost:8080
-const client = Client("localhost:8080");
-
-client.send({path: "/test", host: "localhost", query: {}}, {name: "world"}, (err, response) => {
-  response.rendered === "Hello, world! You went to /test!"; // => true
-});
-```
-
-## Client API
-
-* `Client(url[, timeout])`
-  Returns a Client that connects to `url`. The `timeout` parameter sets the
-  amount of time the client will wait for a response before triggering a
-  timeout. The Client queues requests, so you can immediately begin sending
-  requests.
-* `client.send(conn, data, cb)`
-  Sends a request with the `conn` as `conn` and `data` as `data`. On receiving
-  a response, `cb` is called with the arguments `(err, response)`. `err` is
-  currently used only in the case of a timeout. If a response comes in as an
-  error response, it is still used as the `response` parameter.
-* `client.close()`
-  Closes the client.
-
-## Server
-```javascript
-const {Server} = require("isorender");
+const { Server } = require("isorender");
 
 // You can use Isorender synchronously...
 const server = Server((conn, data) => {
@@ -50,7 +29,7 @@ const server = Server((conn, data) => {
   throw new Error("This could be sensitive information!");
 }, (e) => "But it's okay because this is what will be sent.");
 
-// Isorender is best used with some sort of rendering framework.
+// Isorender is best used with some sort of library/framework.
 const server = Server((conn, data) => {
   return ReactDOMServer.renderToString(<App path={conn.path} data={data} />);
 });
@@ -58,7 +37,7 @@ const server = Server((conn, data) => {
 server.listen(8080, () => console.log("Listening on port 8080"));
 ```
 
-## Server API
+### API
 
 * `Server(renderFunc[, errorHandler])`
   Returns a Server that will render requests with `renderFunc`. `renderFunc` is
@@ -78,35 +57,67 @@ server.listen(8080, () => console.log("Listening on port 8080"));
   Applies arguments to the `net.Server.close` function. Can accept any
   arguments `net.Server.close` will accept.
 
+## Isorender.Client
+
+A reference implementation of an Isorender client.
+
+### Example
+
+```javascript
+const { Client } = require("isorender");
+
+// Assuming a server has been started on localhost:8080
+const client = Client("localhost:8080");
+
+client.send({ path: "/test", host: "localhost", query: {} }, { name: "world" }, (err, response) => {
+  assert(response.rendered === "Hello, world! You went to /test!");
+});
+```
+
+### API
+
+* `Client(url[, timeout])`
+  Returns a Client that connects to `url`. The `timeout` parameter sets the
+  amount of time the client will wait for a response before triggering a
+  timeout. The Client queues requests, so you can immediately begin sending
+  requests.
+
+* `client.send(conn, data, cb)`
+  Sends a request with the provided `conn` and `data`. On receiving
+  a response, `cb` is called with the arguments `(err, response)`. `err` is
+  used for any transport errors that may happen. If an error occurs inside the
+  Isorender server's render function, then the `response` parameter will have
+  an error property containing the error message.
+
+* `client.close()`
+  Closes the client.
+
 ## Protocol
+
 The Isorender protocol consists of a length-prefixed JSON payload. The length
-prefix is always a 32-bit integer in big endian. The JSON payload should be
-encoded in `utf8`.
+prefix is always a 32-bit unsigned integer in big endian. The JSON payload
+should be encoded in `utf8`.
 
 ### Request
+
 A request will be in the following format.
 ```json
 {
-  "id": "random UUIDv4",
+  "id": random UUIDv4,
   "conn": {...},
   "data": {...}
 }
 ```
 
-`conn` is information based on the request you will be rendering for. It should
-be in the following format.
-```json
-{
-  "host": "HTTP host of the request",
-  "path": "HTTP path of the request",
-  "query": "HTTP query parameters"
-}
-```
+`conn` is an arbitrary object provided by the client use for information about
+the request, such as the host, path, query, headers, etc. 
 
-`data` is an arbitrary object provided to the client. For example, this could
-consist of data retrieved from a database.
+`data` is also an arbitrary object provided by the client, however it should
+consist of other information to be used by the rendering server. For example,
+it could consist of data retrieved from your database.
 
 ### Response
+
 A response can be in one of two formats.
 
 ```json
